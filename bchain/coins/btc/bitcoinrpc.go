@@ -25,6 +25,7 @@ type BitcoinRPC struct {
 	*bchain.BaseChain
 	client       http.Client
 	rpcURL       string
+	apiKey		 string
 	user         string
 	password     string
 	Mempool      *bchain.MempoolBitcoinType
@@ -40,6 +41,7 @@ type Configuration struct {
 	CoinName                     string `json:"coin_name"`
 	CoinShortcut                 string `json:"coin_shortcut"`
 	RPCURL                       string `json:"rpc_url"`
+	ApiKey						 string `json:"api_key"`
 	RPCUser                      string `json:"rpc_user"`
 	RPCPass                      string `json:"rpc_pass"`
 	RPCTimeout                   int    `json:"rpc_timeout"`
@@ -66,6 +68,7 @@ func NewBitcoinRPC(config json.RawMessage, pushHandler func(bchain.NotificationT
 	var err error
 	var c Configuration
 	err = json.Unmarshal(config, &c)
+	glog.Info("config: ", c)
 	if err != nil {
 		return nil, errors.Annotatef(err, "Invalid configuration file")
 	}
@@ -98,6 +101,7 @@ func NewBitcoinRPC(config json.RawMessage, pushHandler func(bchain.NotificationT
 		BaseChain:    &bchain.BaseChain{},
 		client:       http.Client{Timeout: time.Duration(c.RPCTimeout) * time.Second, Transport: transport},
 		rpcURL:       c.RPCURL,
+		apiKey:       c.ApiKey,
 		user:         c.RPCUser,
 		password:     c.RPCPass,
 		ParseBlocks:  c.Parse,
@@ -894,7 +898,7 @@ func (b *BitcoinRPC) Call(req interface{}, res interface{}) error {
 	if err != nil {
 		return err
 	}
-	httpReq.SetBasicAuth(b.user, b.password)
+	httpReq.Header.Add("x-api-key", b.apiKey)
 	httpRes, err := b.client.Do(httpReq)
 	// in some cases the httpRes can contain data even if it returns error
 	// see http://devs.cloudimmunity.com/gotchas-and-common-mistakes-in-go-golang/
