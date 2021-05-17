@@ -50,7 +50,6 @@ type EthereumRPC struct {
 	*bchain.BaseChain
 	client               *ethclient.Client
 	rpc                  *rpc.Client
-	apiKey               string
 	timeout              time.Duration
 	Parser               *EthereumParser
 	Mempool              *bchain.MempoolEthereumType
@@ -79,7 +78,7 @@ func NewEthereumRPC(config json.RawMessage, pushHandler func(bchain.Notification
 	}
 
 	rc, ec, err := openRPC(c.RPCURL)
-	rc.SetHeader("x-api-key", c.apiKey)
+	rc.SetHeader("x-api-key", c.ApiKey)
 	if err != nil {
 		return nil, err
 	}
